@@ -24,6 +24,7 @@ import { CContainer, CSpinner } from '@coreui/react'
 
 // routes config
 import { routes } from '../routes'
+import AdminRoute from './AdminRoute'
 
 /**
  * AppContent functional component
@@ -43,16 +44,18 @@ const AppContent = () => {
       <Suspense fallback={<CSpinner color="primary" />}>
         <Routes>
           {routes.map((route, idx) => {
+            if (!route.element) {
+              return null
+            }
+            const element = route.adminOnly ? (
+              <AdminRoute>
+                <route.element />
+              </AdminRoute>
+            ) : (
+              <route.element />
+            )
             return (
-              route.element && (
-                <Route
-                  key={idx}
-                  path={route.path}
-                  exact={route.exact}
-                  name={route.name}
-                  element={<route.element />}
-                />
-              )
+              <Route key={idx} path={route.path} exact={route.exact} name={route.name} element={element} />
             )
           })}
           <Route path="/" element={<Navigate to="dashboard" replace />} />

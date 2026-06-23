@@ -20,11 +20,14 @@ import {
   cilDescription,
   cilDrop,
   cilExternalLink,
+  cilMoney,
   cilNotes,
   cilPencil,
   cilPuzzle,
   cilSpeedometer,
   cilStar,
+  cilStorage,
+  cilSwapVertical,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -80,10 +83,35 @@ const _nav = [
     name: 'Dashboard',
     to: '/dashboard',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
-    badge: {
-      color: 'info',
-      text: 'NEW',
-    },
+  },
+  {
+    component: CNavTitle,
+    name: 'UparContable',
+  },
+  {
+    component: CNavItem,
+    name: 'Productos',
+    to: '/inventario/productos',
+    icon: <CIcon icon={cilStorage} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Movimientos (Kardex)',
+    to: '/kardex/movimientos',
+    icon: <CIcon icon={cilSwapVertical} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Flujo de Caja',
+    to: '/caja/flujo',
+    icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Reportes Financieros',
+    to: '/reportes/financiero',
+    icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
+    adminOnly: true,
   },
   {
     component: CNavTitle,
@@ -571,5 +599,14 @@ const _nav = [
     icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
   },
 ]
+
+/**
+ * Filtra el menú lateral según el rol del usuario autenticado.
+ * Los ítems marcados con `adminOnly: true` solo se muestran al rol 'admin'.
+ *
+ * @param {string|null} rol - Slug del rol actual ('admin' | 'operador').
+ * @returns {Array<Object>} Navegación filtrada.
+ */
+export const getNavItems = (rol) => _nav.filter((item) => !item.adminOnly || rol === 'admin')
 
 export default _nav

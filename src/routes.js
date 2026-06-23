@@ -20,6 +20,12 @@ const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 
+// UparContable MVP
+const Productos = React.lazy(() => import('./views/inventario/Productos'))
+const Movimientos = React.lazy(() => import('./views/kardex/Movimientos'))
+const FlujoCaja = React.lazy(() => import('./views/caja/FlujoCaja'))
+const ReporteFinanciero = React.lazy(() => import('./views/reportes/ReporteFinanciero'))
+
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
 const Breadcrumbs = React.lazy(() => import('./views/base/breadcrumbs/Breadcrumbs'))
@@ -89,6 +95,15 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 export const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
+  { path: '/inventario/productos', name: 'Productos', element: Productos },
+  { path: '/kardex/movimientos', name: 'Movimientos', element: Movimientos },
+  { path: '/caja/flujo', name: 'Flujo de Caja', element: FlujoCaja },
+  {
+    path: '/reportes/financiero',
+    name: 'Reporte Financiero',
+    element: ReporteFinanciero,
+    adminOnly: true,
+  },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/theme/typography', name: 'Typography', element: Typography },
