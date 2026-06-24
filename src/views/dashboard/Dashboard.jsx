@@ -13,7 +13,10 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
+  CWidgetStatsA,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilChartPie, cilMoney, cilStorage, cilWarning } from '@coreui/icons'
 import api from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 
@@ -24,6 +27,7 @@ const formatMoney = (value) =>
 
 const Dashboard = () => {
   const { rol } = useAuth()
+  const [totalProductos, setTotalProductos] = useState(0)
   const [alertas, setAlertas] = useState([])
   const [movimientos, setMovimientos] = useState([])
   const [balance, setBalance] = useState(null)
@@ -36,6 +40,7 @@ const Dashboard = () => {
       const fechaHoy = hoy.toISOString().slice(0, 10)
 
       const peticiones = [
+        api.get('/productos', { params: { per_page: 1 } }),
         api.get('/productos/alertas'),
         api.get('/movimientos', { params: { per_page: 5 } }),
       ]
@@ -51,13 +56,16 @@ const Dashboard = () => {
       const resultados = await Promise.allSettled(peticiones)
 
       if (resultados[0].status === 'fulfilled') {
-        setAlertas(resultados[0].value.data.data)
+        setTotalProductos(resultados[0].value.data.meta.total)
       }
       if (resultados[1].status === 'fulfilled') {
-        setMovimientos(resultados[1].value.data.data)
+        setAlertas(resultados[1].value.data.data)
       }
-      if (rol === 'admin' && resultados[2]?.status === 'fulfilled') {
-        setBalance(resultados[2].value.data)
+      if (resultados[2].status === 'fulfilled') {
+        setMovimientos(resultados[2].value.data.data)
+      }
+      if (rol === 'admin' && resultados[3]?.status === 'fulfilled') {
+        setBalance(resultados[3].value.data)
       }
 
       setLoading(false)
@@ -76,44 +84,56 @@ const Dashboard = () => {
 
   return (
     <>
-      <CRow className="mb-4">
+      <CRow className="mb-4" xs={{ gutter: 4 }}>
         <CCol sm={6} lg={3}>
-          <CCard className="mb-3">
-            <CCardBody>
-              <div className="text-body-secondary small">Productos en alerta</div>
-              <div className="fs-4 fw-semibold">{alertas.length}</div>
-            </CCardBody>
-          </CCard>
+          <CWidgetStatsA
+            color="info"
+            value={
+              <>
+                <CIcon icon={cilStorage} size="xl" className="me-2" />
+                {totalProductos}
+              </>
+            }
+            title="Total Productos"
+          />
+        </CCol>
+        <CCol sm={6} lg={3}>
+          <CWidgetStatsA
+            color="warning"
+            value={
+              <>
+                <CIcon icon={cilWarning} size="xl" className="me-2" />
+                {alertas.length}
+              </>
+            }
+            title="Alertas Activas"
+          />
         </CCol>
         {rol === 'admin' && balance && (
           <>
             <CCol sm={6} lg={3}>
-              <CCard className="mb-3">
-                <CCardBody>
-                  <div className="text-body-secondary small">Ingresos del mes</div>
-                  <div className="fs-4 fw-semibold text-success">
+              <CWidgetStatsA
+                color="success"
+                value={
+                  <>
+                    <CIcon icon={cilMoney} size="xl" className="me-2" />
                     {formatMoney(balance.total_ingresos)}
-                  </div>
-                </CCardBody>
-              </CCard>
+                  </>
+                }
+                title="Total Ingresos"
+              />
             </CCol>
             <CCol sm={6} lg={3}>
-              <CCard className="mb-3">
-                <CCardBody>
-                  <div className="text-body-secondary small">Egresos del mes</div>
-                  <div className="fs-4 fw-semibold text-danger">
-                    {formatMoney(balance.total_egresos)}
-                  </div>
-                </CCardBody>
-              </CCard>
-            </CCol>
-            <CCol sm={6} lg={3}>
-              <CCard className="mb-3">
-                <CCardBody>
-                  <div className="text-body-secondary small">Utilidad neta del mes</div>
-                  <div className="fs-4 fw-semibold">{formatMoney(balance.utilidad_neta)}</div>
-                </CCardBody>
-              </CCard>
+              <CWidgetStatsA
+                color="primary"
+                value={
+                  <>
+                    <CIcon icon={cilChartPie} size="xl" className="me-2" />
+                    {formatMoney(balance.utilidad_neta)}
+                  </>
+                }
+                title="Utilidad Neta"
+              />
             </CCol>
           </>
         )}

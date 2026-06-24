@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import PropTypes from 'prop-types'
 import {
   CBadge,
   CButton,
@@ -27,24 +28,27 @@ const formatMoney = (value) => `$${Number(value).toLocaleString('es-CO')}`
 
 const FILTROS_INICIALES = { tipo: '', fecha_inicio: '', fecha_fin: '' }
 
-const FlujoCaja = () => {
+const FlujoCaja = ({ tipoInicial }) => {
   const { rol } = useAuth()
   const esAdmin = rol === 'admin'
 
   const [transacciones, setTransacciones] = useState([])
   const [meta, setMeta] = useState({ current_page: 1, last_page: 1 })
-  const [filtros, setFiltros] = useState(FILTROS_INICIALES)
+  const [filtros, setFiltros] = useState({ ...FILTROS_INICIALES, tipo: tipoInicial })
   const [loading, setLoading] = useState(true)
   const [modalVisible, setModalVisible] = useState(false)
 
-  const cargarTransacciones = async (page = 1, filtrosActuales = filtros) => {
-    setLoading(true)
+  const armarParams = (page, filtrosActuales) => {
     const params = { page }
     if (filtrosActuales.tipo) params.tipo = filtrosActuales.tipo
     if (filtrosActuales.fecha_inicio) params.fecha_inicio = filtrosActuales.fecha_inicio
     if (filtrosActuales.fecha_fin) params.fecha_fin = filtrosActuales.fecha_fin
+    return params
+  }
 
-    const { data } = await api.get('/caja', { params })
+  const cargarTransacciones = async (page = 1, filtrosActuales = filtros) => {
+    setLoading(true)
+    const { data } = await api.get('/caja', { params: armarParams(page, filtrosActuales) })
     setTransacciones(data.data)
     setMeta(data.meta)
     setLoading(false)
@@ -52,13 +56,15 @@ const FlujoCaja = () => {
 
   useEffect(() => {
     const cargarInicial = async () => {
-      const { data } = await api.get('/caja', { params: { page: 1 } })
+      const { data } = await api.get('/caja', {
+        params: armarParams(1, { ...FILTROS_INICIALES, tipo: tipoInicial }),
+      })
       setTransacciones(data.data)
       setMeta(data.meta)
       setLoading(false)
     }
     cargarInicial()
-  }, [])
+  }, [tipoInicial])
 
   const handleFiltroChange = (campo) => (event) => {
     const nuevosFiltros = { ...filtros, [campo]: event.target.value }
@@ -74,7 +80,7 @@ const FlujoCaja = () => {
   return (
     <CCard>
       <CCardHeader className="d-flex justify-content-between align-items-center">
-        <span>Flujo de Caja</span>
+        <span>{tipoInicial === 'egreso' ? 'Registro de Egresos' : 'Historial de Caja'}</span>
         {esAdmin && (
           <CButton color="primary" size="sm" onClick={() => setModalVisible(true)}>
             <CIcon icon={cilPlus} className="me-1" />
@@ -186,6 +192,14 @@ const FlujoCaja = () => {
       )}
     </CCard>
   )
+}
+
+FlujoCaja.propTypes = {
+  tipoInicial: PropTypes.oneOf(['', 'ingreso', 'egreso']),
+}
+
+FlujoCaja.defaultProps = {
+  tipoInicial: '',
 }
 
 export default FlujoCaja

@@ -1,0 +1,1 @@
+import{c as e,l as t,p as n,s as r,u as i}from"./jsx-runtime-e4Lwk1Ji.js";var a=n(i()),o=n(e()),s=(0,a.forwardRef)((e,n)=>{var{children:i,className:o}=e,s=t(e,[`children`,`className`]);return a.createElement(`div`,Object.assign({className:r(`card-group`,o)},s,{ref:n}),i)});s.propTypes={children:o.default.node,className:o.default.string},s.displayName=`CCardGroup`;export{s as t};

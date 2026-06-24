@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import PropTypes from 'prop-types'
 import {
   CBadge,
   CButton,
@@ -21,7 +22,7 @@ import ProductoForm from './ProductoForm'
 
 const formatMoney = (value) => `$${Number(value).toLocaleString('es-CO')}`
 
-const Productos = () => {
+const Productos = ({ soloAlertas }) => {
   const { rol } = useAuth()
   const esAdmin = rol === 'admin'
 
@@ -33,21 +34,31 @@ const Productos = () => {
 
   const cargarProductos = async (page = 1) => {
     setLoading(true)
-    const { data } = await api.get('/productos', { params: { page } })
-    setProductos(data.data)
-    setMeta(data.meta)
+    if (soloAlertas) {
+      const { data } = await api.get('/productos/alertas')
+      setProductos(data.data)
+    } else {
+      const { data } = await api.get('/productos', { params: { page } })
+      setProductos(data.data)
+      setMeta(data.meta)
+    }
     setLoading(false)
   }
 
   useEffect(() => {
     const cargarInicial = async () => {
-      const { data } = await api.get('/productos', { params: { page: 1 } })
-      setProductos(data.data)
-      setMeta(data.meta)
+      if (soloAlertas) {
+        const { data } = await api.get('/productos/alertas')
+        setProductos(data.data)
+      } else {
+        const { data } = await api.get('/productos', { params: { page: 1 } })
+        setProductos(data.data)
+        setMeta(data.meta)
+      }
       setLoading(false)
     }
     cargarInicial()
-  }, [])
+  }, [soloAlertas])
 
   const abrirCrear = () => {
     setProductoEditar(null)
@@ -75,7 +86,7 @@ const Productos = () => {
   return (
     <CCard>
       <CCardHeader className="d-flex justify-content-between align-items-center">
-        <span>Catálogo de Productos</span>
+        <span>{soloAlertas ? 'Alertas de Stock Bajo' : 'Catálogo de Productos'}</span>
         {esAdmin && (
           <CButton color="primary" size="sm" onClick={abrirCrear}>
             <CIcon icon={cilPlus} className="me-1" />
@@ -150,32 +161,34 @@ const Productos = () => {
               </CTableBody>
             </CTable>
 
-            <div className="d-flex justify-content-between align-items-center mt-2">
-              <span className="text-body-secondary small">
-                Página {meta.current_page} de {meta.last_page}
-              </span>
-              <div>
-                <CButton
-                  color="secondary"
-                  variant="outline"
-                  size="sm"
-                  className="me-2"
-                  disabled={meta.current_page <= 1}
-                  onClick={() => cargarProductos(meta.current_page - 1)}
-                >
-                  Anterior
-                </CButton>
-                <CButton
-                  color="secondary"
-                  variant="outline"
-                  size="sm"
-                  disabled={meta.current_page >= meta.last_page}
-                  onClick={() => cargarProductos(meta.current_page + 1)}
-                >
-                  Siguiente
-                </CButton>
+            {!soloAlertas && (
+              <div className="d-flex justify-content-between align-items-center mt-2">
+                <span className="text-body-secondary small">
+                  Página {meta.current_page} de {meta.last_page}
+                </span>
+                <div>
+                  <CButton
+                    color="secondary"
+                    variant="outline"
+                    size="sm"
+                    className="me-2"
+                    disabled={meta.current_page <= 1}
+                    onClick={() => cargarProductos(meta.current_page - 1)}
+                  >
+                    Anterior
+                  </CButton>
+                  <CButton
+                    color="secondary"
+                    variant="outline"
+                    size="sm"
+                    disabled={meta.current_page >= meta.last_page}
+                    onClick={() => cargarProductos(meta.current_page + 1)}
+                  >
+                    Siguiente
+                  </CButton>
+                </div>
               </div>
-            </div>
+            )}
           </>
         )}
       </CCardBody>
@@ -190,6 +203,14 @@ const Productos = () => {
       )}
     </CCard>
   )
+}
+
+Productos.propTypes = {
+  soloAlertas: PropTypes.bool,
+}
+
+Productos.defaultProps = {
+  soloAlertas: false,
 }
 
 export default Productos
